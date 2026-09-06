@@ -1,0 +1,19 @@
+# Secrete si configurare locala - NU urca niciodata acestea pe GitHub
+.env
+backend/.env
+*.db
+backend/uploads/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Node (daca adaugi tooling frontend in viitor)
+node_modules/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
