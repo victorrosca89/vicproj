@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vicproj
+      POSTGRES_PASSWORD: vicproj_password_schimba_ma
+      POSTGRES_DB: vicproj
+    volumes:
+      - vicproj_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vicproj"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-schimba-acest-secret-cu-unul-foarte-lung-si-random}
+      JWT_ALGORITHM: HS256
+      JWT_EXPIRE_MINUTES: 120
+      ADMIN_PIN_HASH: ${ADMIN_PIN_HASH}
+      MAGIC_TOKEN_EXPIRE_MINUTES: 15
+      DATABASE_URL: postgresql+psycopg2://vicproj:vicproj_password_schimba_ma@db:5432/vicproj
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - vicproj_uploads:/app/uploads
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  vicproj_db_data:
+  vicproj_uploads:
